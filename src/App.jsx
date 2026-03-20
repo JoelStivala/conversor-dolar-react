@@ -13,6 +13,7 @@ function App() {
 
       setDolares(data);
       setCasa(data[0]?.casa); 
+      
     }
     fetchDolares();    
   }
@@ -30,22 +31,25 @@ function App() {
     setCompraVenta(nuevoTipo);
   }
 
+const nombreDolar = dolares.find(d => d.casa === casa) || "";
+
   return (
     <>
       <Seccion titulo={"PRECIOS DÓLAR"}>
-        <ListaDolar dolares={dolares} />
+        <ListaDolar dolares={dolares} casa={casa} onChangeCasa={handleChangeCasa} />
       </Seccion>
 
       <Seccion titulo={"CONVERTIR"}>
-        <SelectorMoneda dolares={dolares} casa={casa} onChangeCasa={handleChangeCasa}/>
+        {/*<SelectorMoneda dolares={dolares} casa={casa} onChangeCasa={handleChangeCasa}/>*/}
         <CardConversor moneda={"Pesos"}>
           <InputPrecio precio={precio} onChangePrecio={handleChangePrecio} />
         </CardConversor>
-        <CardConversor moneda={"Dolar"}>
+        <CardConversor moneda={`Dolar ${nombreDolar.nombre}`}>
           <Precio precio={precio} dolares={dolares} casa={casa} tipo={compraVenta} />
           <CompraVenta tipo={compraVenta} onClickCompraVenta={handleClickCompraVenta} />
         </CardConversor>
       </Seccion>
+      <Footer />
     </>
   );
 }
@@ -59,9 +63,9 @@ function Seccion({ titulo, children }) {
   );
 }
 
-function CardPrecioDolar({ nombre, compra, venta }) {
+function CardPrecioDolar({ nombre, compra, venta, casa, onChangeCasa, className={className} }) {
   return (
-    <li>
+    <li className={className} onClick={() => onChangeCasa(casa)}>
       <h2>{nombre}</h2>
       <p>Compra ${compra}</p>
       <p>Venta ${venta}</p>
@@ -69,10 +73,10 @@ function CardPrecioDolar({ nombre, compra, venta }) {
   );
 }
 
-function ListaDolar({ dolares }) {
+function ListaDolar({ dolares, casa, onChangeCasa }) {
   return (
     <ul>
-      {dolares.map(d => <CardPrecioDolar key={d.casa} nombre={d.nombre} compra={d.compra} venta={d.venta}/>)}
+      {dolares.map(d => <CardPrecioDolar className={d.casa === casa ? "card active" : "card"}key={d.casa} nombre={d.nombre} compra={d.compra} venta={d.venta} casa={d.casa} onChangeCasa={onChangeCasa}/>)}
     </ul>
   );
 }
@@ -86,24 +90,24 @@ function CardConversor({ moneda, children }) {
   );
 }
 
-function SelectorMoneda({ dolares, casa, onChangeCasa }) {
+/*function SelectorMoneda({ dolares, casa, onChangeCasa }) {
   return (
     <select value={casa} onChange={(e) => onChangeCasa(e.target.value)}>
       {dolares.map(d => <option value={d.casa} key={d.casa}>{d.nombre}</option>)}
     </select>
   );
-}
+}*/
 
 function Precio({ precio, dolares, casa, tipo }) {
   const dolar = dolares.find(d => d.casa === casa);
 
   const precioDolar = tipo === "compra" ? dolar?.compra : dolar?.venta;
   
-  if (!precioDolar) return <p>-</p>;
+  if (!Number(precio)) return <p>-</p>;
   
   return (
     <p>
-      {(precio / precioDolar).toFixed(4)}
+      {(precio / Number(precioDolar)).toFixed(4)}
     </p>
   );
 }
@@ -120,11 +124,18 @@ function CompraVenta({ tipo, onClickCompraVenta }) {
 function InputPrecio( {precio, onChangePrecio} ) {
   return (
     <input 
-      type="number"
+      type="text"
       value={precio}
-      onChange={(e) => onChangePrecio(Number(e.target.value))}
+      onChange={(e) => onChangePrecio(e.target.value)}
     />
   );
+}
+
+function Footer() {
+  return( 
+    <footer>
+      <p>Datos provistos por <a href="https://dolarapi.com" target="_blank">DolarApi.com</a></p>
+</footer>);
 }
 
 export default App
