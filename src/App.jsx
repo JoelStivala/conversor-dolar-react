@@ -5,15 +5,17 @@ function App() {
   const [casa, setCasa] = useState("");
   const [precio, setPrecio] = useState("");
   const [compraVenta, setCompraVenta] = useState("compra");
+  const [cargando, setCargando] = useState(true);
 
   useEffect(function(){
     async function fetchDolares() {
+      setCargando(true);
       const res = await fetch("https://dolarapi.com/v1/dolares");
       const data = await res.json();
 
       setDolares(data);
       setCasa(data[0]?.casa); 
-      
+      setCargando(false);
     }
     fetchDolares();    
   }
@@ -36,7 +38,7 @@ const nombreDolar = dolares.find(d => d.casa === casa) || "";
   return (
     <>
       <Seccion titulo={"PRECIOS DÓLAR"}>
-        <ListaDolar dolares={dolares} casa={casa} onChangeCasa={handleChangeCasa} />
+        {cargando ? <Cargando /> : <ListaDolar dolares={dolares} casa={casa} onChangeCasa={handleChangeCasa} />}
       </Seccion>
 
       <Seccion titulo={"CONVERTIR"}>
@@ -44,13 +46,19 @@ const nombreDolar = dolares.find(d => d.casa === casa) || "";
         <CardConversor moneda={"Pesos"}>
           <InputPrecio precio={precio} onChangePrecio={handleChangePrecio} />
         </CardConversor>
-        <CardConversor moneda={`Dolar ${nombreDolar.nombre}`}>
+        <CardConversor moneda={cargando ? "-" : `Dolar ${nombreDolar.nombre}`}>
           <Precio precio={precio} dolares={dolares} casa={casa} tipo={compraVenta} />
           <CompraVenta tipo={compraVenta} onClickCompraVenta={handleClickCompraVenta} />
         </CardConversor>
       </Seccion>
       <Footer />
     </>
+  );
+}
+
+function Cargando() {
+  return (
+    <h1>Cargando...</h1>
   );
 }
 
